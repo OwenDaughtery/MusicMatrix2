@@ -39,6 +39,7 @@ public class MarkovManager : MonoBehaviour {
             approvedChains.Add(tempChain);
             print(approvedChains.Count);
             tempChain=null;
+            chain.resetChain();
         }
     }
 
@@ -170,6 +171,16 @@ public class MarkovManager : MonoBehaviour {
             }
         }
 
+        public NoteManager.Notes getKey(){
+            return key;
+        }
+
+        public void resetChain(){
+            chain = new Dictionary<NoteManager.Notes, MarkovState>();
+            setUpChain();
+
+        }
+
         public void incrementFitnessScore(){
             if(fitnessScore<100){
                 fitnessScore++;
@@ -208,8 +219,8 @@ public class MarkovManager : MonoBehaviour {
             MarkovState state = chain[stateNote];
             float changedBy = state.incrementTransition(transitionNote, percentage);
             state.decrementAllTransitions(transitionNote, changedBy);
-            //print("=========");
-            //state.showTransitions();
+            print("=========");
+            state.showTransitions();
             //state.sumProbs();
             
         }
