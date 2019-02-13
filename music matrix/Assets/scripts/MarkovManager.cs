@@ -8,6 +8,7 @@ public class MarkovManager : MonoBehaviour {
     public List<MarkovChain> approvedChains = new List<MarkovChain>();
     public List<RhythmMarkovChain> approvedRhythmChains = new List<RhythmMarkovChain>();
     public MarkovChain tempChain = null;
+    private int phase = 0;
 
     public MarkovChain chain;
     public RhythmMarkovChain rhythmChain;
@@ -19,10 +20,10 @@ public class MarkovManager : MonoBehaviour {
 
     // Use this for initialization
     void Start() {
-        chain = new MarkovChain(trackManager.getKey());
+        chain = new MarkovChain(trackManager.getKey(), 0);
         rhythmChain = new RhythmMarkovChain();
         //rhythmChain.asString();
-        //chain.showTransitions();
+        //chain.asString();
     }
 
     // Update is called once per frame
@@ -34,14 +35,55 @@ public class MarkovManager : MonoBehaviour {
         return chain;
     }
 
+    public int getPhase(){
+        return phase;
+    }
+
+    private void advancePhase(){
+        phase+=1;
+    }
+
     public void approveMarkovChain(){
-        if(tempChain!=null){
-            approvedChains.Add(tempChain);
-            print(approvedChains.Count);
-            tempChain=null;
-            chain.resetChain();
+        if(phase==0){
+            if(tempChain!=null){
+                int currentID = chain.getID();
+                approvedChains.Add(tempChain);
+                tempChain=null;
+                chain = new MarkovChain(trackManager.getKey(), currentID+1);
+                if(approvedChains.Count==3){//10 is an arbritary number
+                    advancePhase();
+                    chain = getNextChain(null);
+                }
+            }
+        }else if(phase==1){
+            
+        }
+        
+        print("number of approved markov chains: " + approvedChains.Count);
+    }
+
+    public void disapproveMarkovChain(){
+        if(phase==0){
+            if(tempChain!=null){
+                int currentID = chain.getID();
+                tempChain=null;
+                chain = new MarkovChain(trackManager.getKey(), currentID+1);
+            }
         }
     }
+
+    private MarkovChain getNextChain(MarkovChain currentChain){
+        int currentIndex;
+        if(currentChain == null){
+            currentIndex = 0;
+        }else{
+            currentIndex = approvedChains.IndexOf(currentChain);
+            currentIndex = (currentIndex+1) % approvedChains.Count;
+        }
+        print("getting markov chain at index " + currentIndex + " which has ID of " + approvedChains[currentIndex].getID());
+        return approvedChains[currentIndex];
+    }
+
 
     //
     public void influenceRhythmChain(Tilemap tilemap) {
@@ -116,6 +158,9 @@ public class MarkovManager : MonoBehaviour {
         } while (totalSoFar+timing < TileManager.gridWidth-1);
         
         tempChain=chain;
+        if(phase==1){
+            chain = getNextChain(chain);
+        }
     }
 
     private static NoteManager.Notes clampToBottomOctave(NoteManager.Notes note) {
@@ -154,11 +199,13 @@ public class MarkovManager : MonoBehaviour {
 
     //markov chain class
     public class MarkovChain {
+        int ID;
         int fitnessScore = 50;
         NoteManager.Notes key;
         Dictionary<NoteManager.Notes, MarkovState> chain = new Dictionary<NoteManager.Notes, MarkovState>();
 
-        public MarkovChain(NoteManager.Notes newKey) {
+        public MarkovChain(NoteManager.Notes newKey, int ID) {
+            this.ID=ID;
             key = newKey;
             setUpChain();
         }
@@ -173,6 +220,10 @@ public class MarkovManager : MonoBehaviour {
 
         public NoteManager.Notes getKey(){
             return key;
+        }
+
+        public int getID(){
+            return ID;
         }
 
         public void resetChain(){
@@ -220,8 +271,7 @@ public class MarkovManager : MonoBehaviour {
             float changedBy = state.incrementTransition(transitionNote, percentage);
             state.decrementAllTransitions(transitionNote, changedBy);
             print("=========");
-            state.showTransitions();
-            //state.sumProbs();
+            //state.asString();
             
         }
 

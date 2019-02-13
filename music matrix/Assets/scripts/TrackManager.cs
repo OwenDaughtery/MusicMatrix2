@@ -9,6 +9,7 @@ public class TrackManager : MonoBehaviour {
     int octaveOffset = 12;
     int timingCount = -1;
 
+
     [SerializeField]
     private GameObject readHeadMapObject;
     private Tilemap readHeadMap;
@@ -126,11 +127,18 @@ public class TrackManager : MonoBehaviour {
                 //markovManager.getMarkovChain().wipeChain();
                 markovManager.influenceChain(tileMap);
                 markovManager.influenceRhythmChain(tileMap);
-                if(bars%2==0){
-                    
-                    markovManager.populateTrack(markovChainMap, markovTileBase);
-                    bars=0;
+                if(markovManager.getPhase()==0){
+                    if(bars%4==0){
+                        markovManager.populateTrack(markovChainMap, markovTileBase);
+                        bars=0;
+                    }
+                }else if(markovManager.getPhase()==1){
+                    if(bars%2==0){
+                        markovManager.populateTrack(markovChainMap, markovTileBase);
+                        bars=0;
+                    }
                 }
+                
             }
 
             
