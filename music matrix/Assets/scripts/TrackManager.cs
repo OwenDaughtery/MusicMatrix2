@@ -128,7 +128,7 @@ public class TrackManager : MonoBehaviour {
                 markovManager.influenceChain(tileMap);
                 markovManager.influenceRhythmChain(tileMap);
                 if(markovManager.getPhase()==0){
-                    if(bars%4==0){
+                    if(bars%1==0){
                         markovManager.populateTrack(markovChainMap, markovTileBase);
                         bars=0;
                     }

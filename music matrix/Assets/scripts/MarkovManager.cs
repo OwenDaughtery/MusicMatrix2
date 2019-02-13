@@ -9,6 +9,7 @@ public class MarkovManager : MonoBehaviour {
     public List<RhythmMarkovChain> approvedRhythmChains = new List<RhythmMarkovChain>();
     public MarkovChain tempChain = null;
     private int phase = 0;
+    private int numberOfChainsToStore = 3;
 
     public MarkovChain chain;
     public RhythmMarkovChain rhythmChain;
@@ -40,6 +41,7 @@ public class MarkovManager : MonoBehaviour {
     }
 
     private void advancePhase(){
+        print("ADVANCING PHASE");
         phase+=1;
     }
 
@@ -50,10 +52,16 @@ public class MarkovManager : MonoBehaviour {
                 approvedChains.Add(tempChain);
                 tempChain=null;
                 chain = new MarkovChain(trackManager.getKey(), currentID+1);
-                if(approvedChains.Count==3){//10 is an arbritary number
+                if(approvedChains.Count==numberOfChainsToStore){
                     advancePhase();
                     chain = getNextChain(null);
+                    List<MarkovChain> newApprovedStates = new List<MarkovChain>();
+                    for (int i = 0; i < numberOfChainsToStore; i++){
+                        newApprovedStates.Add(breedChains());
+                    }
+                    approvedChains = newApprovedStates;
                 }
+
             }
         }else if(phase==1){
             
@@ -197,10 +205,37 @@ public class MarkovManager : MonoBehaviour {
         return mostCommonNote;
     }
 
+    private MarkovChain breedChains(){
+            List<MarkovChain> approvedChainsCopy = new List<MarkovChain>(approvedChains);
+
+            int index = Random.Range(0,approvedChainsCopy.Count);
+            MarkovChain chain1 = approvedChainsCopy[index];
+            approvedChainsCopy.Remove(chain1);
+
+            index = Random.Range(0,approvedChainsCopy.Count);
+            MarkovChain chain2 = approvedChainsCopy[index];
+            approvedChainsCopy.Remove(chain2);
+
+            MarkovChain bredChain = new MarkovChain(trackManager.getKey(), -1);
+            for (int i = 1; i <= 12; i++) {
+                NoteManager.Notes note = (NoteManager.Notes)i;
+                if(Random.Range(0,2) == 0){
+                    print("debug line 1");
+                    bredChain.replaceState(note, chain1.getState(note));
+                }else{
+                    print("debug line 2");
+                    bredChain.replaceState(note, chain2.getState(note));
+                }
+            }
+            print("end debug");
+            return bredChain;
+            
+        }
+
     //markov chain class
     public class MarkovChain {
         int ID;
-        int fitnessScore = 50;
+        int fitnessScore = 5;
         NoteManager.Notes key;
         Dictionary<NoteManager.Notes, MarkovState> chain = new Dictionary<NoteManager.Notes, MarkovState>();
 
@@ -218,6 +253,17 @@ public class MarkovManager : MonoBehaviour {
             }
         }
 
+        public MarkovState getState(NoteManager.Notes note){
+            print("error about to happen? cause: " + note);
+            print(chain[note]);
+            print("nah it didn't");
+            return chain[note];
+        }
+
+        public void replaceState(NoteManager.Notes note, MarkovState newState){
+            chain[note]=newState;
+        }
+
         public NoteManager.Notes getKey(){
             return key;
         }
@@ -233,7 +279,7 @@ public class MarkovManager : MonoBehaviour {
         }
 
         public void incrementFitnessScore(){
-            if(fitnessScore<100){
+            if(fitnessScore<10){
                 fitnessScore++;
             }
         }
@@ -422,6 +468,7 @@ public class MarkovManager : MonoBehaviour {
             }
             print("total weighting from state " + state + " is: " + total);
         }
+
     }
 
     //=====RHYTHM STARTS HERE=====//
