@@ -6,7 +6,7 @@ public class ViewHandler : MonoBehaviour {
 	public MarkovManager markovManager;
 
 	public void approveMarkov(){
-		markovManager.approveMarkovChain();
+		markovManager.approveMarkovPair();
 	}
 
 	public void disapproveMarkov(){

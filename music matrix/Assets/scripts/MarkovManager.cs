@@ -5,15 +5,15 @@ using UnityEngine.Tilemaps;
 
 public class MarkovManager : MonoBehaviour {
 
-    public List<MarkovChain> approvedChains = new List<MarkovChain>();
-    public List<RhythmMarkovChain> approvedRhythmChains = new List<RhythmMarkovChain>();
-    public MarkovChain tempChain = null;
-    private int phase = 0;
-    private int numberOfChainsToStore = 3;
 
-    public MarkovPair pair;
-    public MarkovChain chain;
-    public RhythmMarkovChain rhythmChain;
+    public List<MarkovPair> approvedPairs = new List<MarkovPair>();
+
+    public MarkovPair tempPair = null;
+    private int phase = 0;
+    private int numberOfPairsToStore = 3;
+
+    public MarkovPair markovPair;
+
     [SerializeField]
     public TrackManager trackManager;
     public static float incrementAmount = 0.01f; //how much a weight should be affected.
@@ -22,9 +22,8 @@ public class MarkovManager : MonoBehaviour {
 
     // Use this for initialization
     void Start() {
-        chain = new MarkovChain(trackManager.getKey(), 0);
-        rhythmChain = new RhythmMarkovChain();
-        pair = new MarkovPair(chain, rhythmChain);
+        markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), 0), new RhythmMarkovChain());
+        
         //rhythmChain.asString();
         //chain.asString();
     }
@@ -35,7 +34,7 @@ public class MarkovManager : MonoBehaviour {
     }
 
     public MarkovChain getMarkovChain() {
-        return chain;
+        return markovPair.getMarkovChain();
     }
 
     public int getPhase(){
@@ -47,21 +46,21 @@ public class MarkovManager : MonoBehaviour {
         phase+=1;
     }
 
-    public void approveMarkovChain(){
+    public void approveMarkovPair(){
         if(phase==0){
-            if(tempChain!=null){
-                int currentID = chain.getID();
-                approvedChains.Add(tempChain);
-                tempChain=null;
-                chain = new MarkovChain(trackManager.getKey(), currentID+1);
-                if(approvedChains.Count==numberOfChainsToStore){
+            if(tempPair!=null){
+                int currentID = markovPair.getMarkovChain().getID();
+                approvedPairs.Add(tempPair);
+                tempPair=null;
+                markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID+1), new RhythmMarkovChain());
+                if(approvedPairs.Count>=numberOfPairsToStore){
                     advancePhase();
-                    chain = getNextChain(null);
-                    List<MarkovChain> newApprovedStates = new List<MarkovChain>();
-                    for (int i = 0; i < numberOfChainsToStore; i++){
-                        newApprovedStates.Add(breedChains());
+                    markovPair = getNextPair(null);
+                    List<MarkovPair> newApprovedPairs = new List<MarkovPair>();
+                    for (int i = 0; i < numberOfPairsToStore; i++){
+                        newApprovedPairs.Add(breedPairs());
                     }
-                    approvedChains = newApprovedStates;
+                    approvedPairs = newApprovedPairs;
                 }
 
             }
@@ -69,34 +68,35 @@ public class MarkovManager : MonoBehaviour {
             
         }
         
-        print("number of approved markov chains: " + approvedChains.Count);
+        print("number of approved markov chains: " + approvedPairs.Count);
     }
 
-    public void disapproveMarkovChain(){
+    public void disapproveMarkovPair(){
         if(phase==0){
-            if(tempChain!=null){
-                int currentID = chain.getID();
-                tempChain=null;
-                chain = new MarkovChain(trackManager.getKey(), currentID+1);
+            if(tempPair!=null){
+                int currentID = markovPair.getMarkovChain().getID();
+                tempPair=null;
+                markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID+1), new RhythmMarkovChain());
             }
         }
     }
 
-    private MarkovChain getNextChain(MarkovChain currentChain){
+    private MarkovPair getNextPair(MarkovPair currentPair){
         int currentIndex;
-        if(currentChain == null){
+        if(currentPair == null){
             currentIndex = 0;
         }else{
-            currentIndex = approvedChains.IndexOf(currentChain);
-            currentIndex = (currentIndex+1) % approvedChains.Count;
+            currentIndex = approvedPairs.IndexOf(currentPair);
+            currentIndex = (currentIndex+1) % approvedPairs.Count;
         }
-        print("getting markov chain at index " + currentIndex + " which has ID of " + approvedChains[currentIndex].getID());
-        return approvedChains[currentIndex];
+        print("getting markov chain at index " + currentIndex + " which has ID of " + approvedPairs[currentIndex].getMarkovChain().getID());
+        return approvedPairs[currentIndex];
     }
 
 
     //
     public void influenceRhythmChain(Tilemap tilemap) {
+        RhythmMarkovChain rhythmChain = markovPair.getRhythmMarkovChain();
         List<List<NoteManager.Notes>> melody = trackManager.getMelodyFromTilemap(tilemap);
         List<NoteManager.Notes> lastColumn = null; 
         int tempRest = 1;
@@ -121,6 +121,7 @@ public class MarkovManager : MonoBehaviour {
 
         //
     public void influenceChain(Tilemap tilemap) {
+        MarkovChain chain = markovPair.getMarkovChain();
         List<List<NoteManager.Notes>> melody = trackManager.getMelodyFromTilemap(tilemap);
         List<NoteManager.Notes> lastColumn = null; 
         foreach (List<NoteManager.Notes> column in melody){
@@ -149,9 +150,9 @@ public class MarkovManager : MonoBehaviour {
         if (mostCommonNote == NoteManager.Notes.none) {
             mostCommonNote = NoteManager.Notes.C2;
         }
-        NoteManager.Notes nextNote = chain.getNextNote(mostCommonNote);
+        NoteManager.Notes nextNote = markovPair.getMarkovChain().getNextNote(mostCommonNote);
         
-        int timing = rhythmChain.getNextRest(1); //arbritary 1, take care not to pass a number that isn't a key of the rhythm chain.
+        int timing = markovPair.getRhythmMarkovChain().getNextRest(1); //arbritary 1, take care not to pass a number that isn't a key of the rhythm chain.
         int totalSoFar =0;
         
         do
@@ -161,15 +162,15 @@ public class MarkovManager : MonoBehaviour {
             Vector3Int posToAddTo = new Vector3Int(totalSoFar, noteToHeight - 1, 0);
             tileMap.SetTile(posToAddTo, tileBase);
             
-            nextNote = chain.getNextNote(nextNote);
-            timing = rhythmChain.getNextRest(timing);
+            nextNote = markovPair.getMarkovChain().getNextNote(nextNote);
+            timing = markovPair.getRhythmMarkovChain().getNextRest(timing);
             
 
         } while (totalSoFar+timing < TileManager.gridWidth-1);
         
-        tempChain=chain;
+        tempPair=markovPair;
         if(phase==1){
-            chain = getNextChain(chain);
+            markovPair = getNextPair(markovPair);
         }
     }
 
@@ -207,16 +208,18 @@ public class MarkovManager : MonoBehaviour {
         return mostCommonNote;
     }
 
-    private MarkovChain breedChains(){
-        List<MarkovChain> approvedChainsCopy = new List<MarkovChain>(approvedChains);
+    private MarkovPair breedPairs(){
+        List<MarkovPair> approvedPairsCopy = new List<MarkovPair>(approvedPairs);
 
-        int index = Random.Range(0,approvedChainsCopy.Count);
-        MarkovChain chain1 = approvedChainsCopy[index];
-        approvedChainsCopy.Remove(chain1);
+        int index = Random.Range(0,approvedPairsCopy.Count);
+        MarkovPair pair1 = approvedPairsCopy[index];
+        MarkovChain chain1 = pair1.getMarkovChain();
+        approvedPairsCopy.Remove(pair1);
 
-        index = Random.Range(0,approvedChainsCopy.Count);
-        MarkovChain chain2 = approvedChainsCopy[index];
-        approvedChainsCopy.Remove(chain2);
+        index = Random.Range(0,approvedPairsCopy.Count);
+        MarkovPair pair2 = approvedPairsCopy[index];
+        MarkovChain chain2 = pair2.getMarkovChain();
+        approvedPairsCopy.Remove(pair2);
 
         MarkovChain bredChain = new MarkovChain(trackManager.getKey(), -1);
         for (int i = 1; i <= 12; i++) {
@@ -230,7 +233,8 @@ public class MarkovManager : MonoBehaviour {
         if(Random.Range(0,10)!=0){//10% chance to mutate
             mutateChain(bredChain);
         }
-        return bredChain;
+        MarkovPair newMarkovPair = new MarkovPair(bredChain, new RhythmMarkovChain());
+        return newMarkovPair;
         
     }
 
@@ -245,17 +249,25 @@ public class MarkovManager : MonoBehaviour {
         MarkovChain markovChain;
         RhythmMarkovChain rhythmMarkovChain;
 
-        public MarkovPair(MarkovChain markovChain, RhythmMarkovChain rhythmMarkovChain){
-            this.markovChain = markovChain;
-            this.rhythmMarkovChain = rhythmMarkovChain;
+        public MarkovPair(MarkovChain chain, RhythmMarkovChain rhythmChain){
+            markovChain = chain;
+            rhythmMarkovChain = rhythmChain;
         }
 
         public MarkovChain getMarkovChain(){
             return markovChain;
         }
 
-        public RhythmMarkovChain(){
+        public RhythmMarkovChain getRhythmMarkovChain(){
             return rhythmMarkovChain;
+        }
+
+        public void setMarkovChain(MarkovChain chain){
+            markovChain = chain;
+        }
+
+        public void setRhythmMarkovChain(RhythmMarkovChain rhythmChain){
+            rhythmMarkovChain = rhythmChain;
         }
 
     }
