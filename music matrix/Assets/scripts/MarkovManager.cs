@@ -11,6 +11,7 @@ public class MarkovManager : MonoBehaviour {
     private int phase = 0;
     private int numberOfChainsToStore = 3;
 
+    public MarkovPair pair;
     public MarkovChain chain;
     public RhythmMarkovChain rhythmChain;
     [SerializeField]
@@ -23,6 +24,7 @@ public class MarkovManager : MonoBehaviour {
     void Start() {
         chain = new MarkovChain(trackManager.getKey(), 0);
         rhythmChain = new RhythmMarkovChain();
+        pair = new MarkovPair(chain, rhythmChain);
         //rhythmChain.asString();
         //chain.asString();
     }
@@ -237,6 +239,25 @@ public class MarkovManager : MonoBehaviour {
         int indexForNote2 = Random.Range(1,13);
         print("mutating: " + (NoteManager.Notes)indexForNote1 + " to " + (NoteManager.Notes)indexForNote2);
         chain.incrementWeight((NoteManager.Notes)indexForNote1,(NoteManager.Notes)indexForNote2);
+    }
+
+    public class MarkovPair {
+        MarkovChain markovChain;
+        RhythmMarkovChain rhythmMarkovChain;
+
+        public MarkovPair(MarkovChain markovChain, RhythmMarkovChain rhythmMarkovChain){
+            this.markovChain = markovChain;
+            this.rhythmMarkovChain = rhythmMarkovChain;
+        }
+
+        public MarkovChain getMarkovChain(){
+            return markovChain;
+        }
+
+        public RhythmMarkovChain(){
+            return rhythmMarkovChain;
+        }
+
     }
 
     //markov chain class
