@@ -10,13 +10,13 @@ public class MarkovManager : MonoBehaviour {
 
     public MarkovPair tempPair = null;
     private int phase = 0;
-    private int numberOfPairsToStore = 3;
+    private int numberOfPairsToStore = 4;
 
     public MarkovPair markovPair;
 
     [SerializeField]
     public TrackManager trackManager;
-    public static float incrementAmount = 0.01f; //how much a weight should be affected.
+    public static float incrementAmount = 0.1f; //how much a weight should be affected.
     public static int maximumRest = 15;
     //public static int maximumRest = 16;
 
@@ -35,6 +35,10 @@ public class MarkovManager : MonoBehaviour {
 
     public MarkovChain getMarkovChain() {
         return markovPair.getMarkovChain();
+    }
+
+    public RhythmMarkovChain getRhythmMarkovChain(){
+        return markovPair.getRhythmMarkovChain();
     }
 
     public int getPhase(){
@@ -214,11 +218,13 @@ public class MarkovManager : MonoBehaviour {
         int index = Random.Range(0,approvedPairsCopy.Count);
         MarkovPair pair1 = approvedPairsCopy[index];
         MarkovChain chain1 = pair1.getMarkovChain();
+        RhythmMarkovChain rhythmChain1 = pair1.getRhythmMarkovChain();
         approvedPairsCopy.Remove(pair1);
 
         index = Random.Range(0,approvedPairsCopy.Count);
         MarkovPair pair2 = approvedPairsCopy[index];
         MarkovChain chain2 = pair2.getMarkovChain();
+        RhythmMarkovChain rhythmChain2 = pair2.getRhythmMarkovChain();
         approvedPairsCopy.Remove(pair2);
 
         MarkovChain bredChain = new MarkovChain(trackManager.getKey(), -1);
