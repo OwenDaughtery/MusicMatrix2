@@ -26,6 +26,8 @@ public class TrackManager : MonoBehaviour {
 
     [SerializeField]
     private MarkovManager markovManager;
+    [SerializeField]
+    private KeyManager keyManager;
 
     public NoteManager.Notes key;
     private List<NoteManager.Notes> scale = new List<NoteManager.Notes>();
@@ -138,7 +140,9 @@ public class TrackManager : MonoBehaviour {
                         bars=0;
                     }
                 }
-                
+                //update KeyManager with user inputted notes from bar.
+                NoteManager.Notes key = keyManager.adaptkey(getMelodyFromTilemap(tileMap));
+
             }
 
             
@@ -146,6 +150,8 @@ public class TrackManager : MonoBehaviour {
             foreach (NoteManager.Notes note in selectedNotes){
                 contactSC(note);
             }
+
+
            
             yield return new WaitForSeconds(waitForSeconds);
 

@@ -178,7 +178,7 @@ public class MarkovManager : MonoBehaviour {
         }
     }
 
-    private static NoteManager.Notes clampToBottomOctave(NoteManager.Notes note) {
+    public static NoteManager.Notes clampToBottomOctave(NoteManager.Notes note) {
         int noteAsInt = (int)note;
         noteAsInt -= 1;
         noteAsInt %= 12;
