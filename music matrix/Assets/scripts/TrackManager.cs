@@ -79,7 +79,7 @@ public class TrackManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Given a key, generates all of the notes in that key.
+    /// Given a key, generates all of the notes in the scale of that key.
     /// </summary>
     /// <param name="key">The key of the scale to generate</param>
     /// <param name="octaveMultiplier">What octave the scale should start at.</param>
@@ -87,11 +87,23 @@ public class TrackManager : MonoBehaviour {
     public static List<NoteManager.Notes> generateScale(NoteManager.Notes key, int octaveMultiplier){
         int scaleOffset = ((int)key);
         List<NoteManager.Notes> scale = new List<NoteManager.Notes>();
-        for (int i = 0; i < Mathf.RoundToInt(TileManager.gridHeight/7); i++) {
-            foreach (int offset in majorScale){
-                scale.Add((NoteManager.Notes)(offset + scaleOffset + (12 * (i + octaveMultiplier))));
+        //if no key has been selected:
+        if (key == NoteManager.Notes.none){
+            /*print("no key! inscale notes are now all notes");
+            for (int i = 1; i <= 12; i++){
+                scale.Add((NoteManager.Notes)i);
+                print(((NoteManager.Notes)i));
+            }*/
+        }
+        else { 
+            for (int i = 0; i < Mathf.RoundToInt(TileManager.gridHeight/7); i++) {
+                foreach (int offset in majorScale){
+                    scale.Add((NoteManager.Notes)(offset + scaleOffset + (12 * (i + octaveMultiplier))));
+                    print("generate scale: " + (NoteManager.Notes)(offset + scaleOffset + (12 * (i + octaveMultiplier))));
+                }
             }
         }
+        print("generate scale: " + scale.Count);
         return scale;
     }
 
@@ -176,9 +188,11 @@ public class TrackManager : MonoBehaviour {
             allNoteMaps.Add(gameObject.GetComponent<Tilemap>());
         }
 
+        int phase;
         while (true) {
             //variable to keet track of read head.
             timingCount += 1;
+            phase = markovManager.getPhase();
             
             //enter if statement if readhead has gone over width of grid.
             if ((timingCount % TileManager.gridWidth == 0) && timingCount>0) {
@@ -186,26 +200,41 @@ public class TrackManager : MonoBehaviour {
                 //read head reset
                 timingCount %= TileManager.gridWidth;
                 //Given the users tilemap, influence the current markov chain and markovRhythm chain.
-                markovManager.influenceChain(tileMap);
-                markovManager.influenceRhythmChain(tileMap);
+                if (phase != -1) {
+                    markovManager.influenceChain(tileMap);
+                    markovManager.influenceRhythmChain(tileMap);
+                }
+                
 
                 //Check which phase system is in to do correct action.
-                if(markovManager.getPhase()==0){
+                if (phase == -1) {
+                    //Key detection Phase
+
+                }else if(phase==0){
                     //Learning Phase
                     if(bars%4==0){
                         markovManager.populateTrack(markovChainMap, markovTileBase);
                         bars=0;
                     }
-                }else if(markovManager.getPhase()==1){
+                }else if(phase==1){
                     //Breeding Phase
                     if(bars%1==0){
                         markovManager.populateTrack(markovChainMap, markovTileBase);
                         bars=0;
                     }
                 }
-                //update KeyManager with user inputted notes from bar just played.
-                List<NoteManager.Notes> predictedKeys = keyManager.adaptkey(getMelodyFromTilemap(tileMap));
-                markovManager.weightInKeyNotes(predictedKeys);
+
+                if (key == NoteManager.Notes.none) {
+                    //update KeyManager with user inputted notes from bar just played.
+                    List<NoteManager.Notes> predictedKeys = keyManager.adaptkey(getMelodyFromTilemap(tileMap));
+                    if (predictedKeys.Count == 1){
+                        print("Loop: successfully narrowed key down to 1. Setting key.");
+                        key = predictedKeys[0];
+                        markovManager.advancePhase();
+                    }
+                    //markovManager.weightInKeyNotes(predictedKeys);
+                }
+
 
             }
 

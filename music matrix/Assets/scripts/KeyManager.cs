@@ -67,7 +67,7 @@ public class KeyManager : MonoBehaviour {
             }
         }
 
-        print(possibleKeys.Count);
+        print("adaptKey: " + possibleKeys.Count);
         if (possibleKeys.Count == 1){
             print("Predicted key is: " + possibleKeys[0]);
         }

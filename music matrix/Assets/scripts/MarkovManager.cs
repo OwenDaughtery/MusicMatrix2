@@ -11,7 +11,8 @@ public class MarkovManager : MonoBehaviour {
     public MarkovPair tempPair = null;
 
     //what phase the system is currently in.
-    private int phase = 0;
+    //-1 is key detection, 0 is learning, 1 is breeding,
+    private int phase = -1;
 
     //The number of pairs to store before the system enters the breeding phase.
     private int numberOfPairsToStore = 4;
@@ -29,10 +30,13 @@ public class MarkovManager : MonoBehaviour {
     public static int maximumRest = 15;
 
     void Start() {
-        markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), 0), new RhythmMarkovChain());
     }
 
     void Update() {
+    }
+
+    public void startMarkovManaging() {
+        markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), 0), new RhythmMarkovChain());
     }
 
     /// <summary>
@@ -62,9 +66,15 @@ public class MarkovManager : MonoBehaviour {
     /// <summary>
     /// Increment phase variable.
     /// </summary>
-    private void advancePhase(){
+    public void advancePhase(){
         print("ADVANCING PHASE");
         phase+=1;
+        if (phase == 0) {
+            print("Advance Phase: Entering Learning Phase.");
+            startMarkovManaging();
+        } else if (phase == 1) {
+            print("Advance Phase: Entering Breeding Phase");
+        }
     }
 
     /// <summary>
@@ -72,7 +82,9 @@ public class MarkovManager : MonoBehaviour {
     /// </summary>
     public void approveMarkovPair(){
         //if in learning phase:
-        if(phase==0){
+        if (phase == -1) {
+
+        }else if(phase==0){
             //If there is a markov pair to approve.
             if(tempPair!=null){
                 //Get id from markov chain.
@@ -111,12 +123,17 @@ public class MarkovManager : MonoBehaviour {
     /// Method used to disapprove of a markov pair. Simply creates a brand new markov chain and trashes the current one.
     /// </summary>
     public void disapproveMarkovPair(){
-        if(phase==0){
-            if(tempPair!=null){
+        if (phase == -1){
+
+        }else if (phase == 0){
+            if (tempPair != null)
+            {
                 int currentID = markovPair.getMarkovChain().getID();
-                tempPair=null;
-                markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID+1), new RhythmMarkovChain());
+                tempPair = null;
+                markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID + 1), new RhythmMarkovChain());
             }
+        }else if (phase == 1) {
+
         }
     }
 
@@ -706,7 +723,7 @@ public class MarkovManager : MonoBehaviour {
             for (int i = 1; i <= 12; i++) {
                 NoteManager.Notes noteToAdd = (NoteManager.Notes)i;
                 if (inScaleKeys.Contains(noteToAdd)) {
-                    transitions.Add(noteToAdd, 0.125f);
+                    transitions.Add(noteToAdd, inScaleWeight);
                 } else {
                     transitions.Add(noteToAdd, notInScaleWeight);
                 }

@@ -387,7 +387,7 @@ MonoBehaviour:
   markovTileBase: {fileID: 11400000, guid: eac0be8c7d756cc48938d9894ead4733, type: 2}
   markovManager: {fileID: 1790977382}
   keyManager: {fileID: 1302462926}
-  key: 1
+  key: 0
 --- !u!1 &259648912
 GameObject:
   m_ObjectHideFlags: 0
