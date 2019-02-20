@@ -225,6 +225,7 @@ public class MarkovManager : MonoBehaviour {
     /// <param name="tileMap">the tilemap that the method should populate</param>
     /// <param name="tileBase"></param>
     public void populateTrack(Tilemap tileMap, TileBase tileBase) {
+        print("debug id going in");
         //erase previous notes from tilemap
         tileMap.ClearAllTiles();
         List<List<NoteManager.Notes>> melody = trackManager.getMelodyFromTilemap(trackManager.getTilemap());
@@ -261,6 +262,7 @@ public class MarkovManager : MonoBehaviour {
         if(phase==1){
             markovPair = getNextPair(markovPair);
         }
+        print("debug id coming out");
     }
 
     /// <summary>
@@ -283,7 +285,6 @@ public class MarkovManager : MonoBehaviour {
     /// </summary>
     /// <param name="melody">List of list of NoteManager enums representing a melody of notes.</param>
     /// <returns>NoteManager enum of the most common note in the melody.</returns>
-    /// NOTE: NEEDS REVISING FOR FUTURE VERSIONS
     private NoteManager.Notes calculateMostCommonNote(List<List<NoteManager.Notes>> melody) {
         Dictionary<NoteManager.Notes, int> mostCommonNotes = new Dictionary<NoteManager.Notes, int>();
         foreach (List<NoteManager.Notes> column in melody){
@@ -314,7 +315,6 @@ public class MarkovManager : MonoBehaviour {
     /// Function that uses 2 randomly selected markovpairs from the list of approved pairs, breeds them together, mutates the child (possibly), and returns it.
     /// </summary>
     /// <returns>A new markov pair which is a child of 2 markov pairs in the approvedpairs list.</returns>
-    /// NOTE: NEED TO ADD RHYTHM MARKOV CHAIN BREEDING IN LATER VERSIONS.
     private MarkovPair breedPairs(){
         List<MarkovPair> approvedPairsCopy = new List<MarkovPair>(approvedPairs);
 
@@ -343,9 +343,23 @@ public class MarkovManager : MonoBehaviour {
                 bredChain.replaceState(note, chain2.getState(note));
             }
         }
-        
+
+
+        RhythmMarkovChain bredRhythmChain = new RhythmMarkovChain();
+        for (int i = 1; i <= maximumRest; i++){
+            NoteManager.Notes note = (NoteManager.Notes)i;
+            //randomly choose between both chains, and replace the new chains states with one of the selected parent chains'.
+            if (Random.Range(0, 2) == 0){
+                bredRhythmChain.replaceState(i, rhythmChain1.getState(i));
+            }
+            else
+            {
+                bredRhythmChain.replaceState(i, rhythmChain2.getState(i));
+            }
+        }
+
         //enter if statement X% of the time and mutate the bred chain for variety.
-        if(Random.Range(0,10)!=0){//10% chance to mutate
+        if (Random.Range(0,10)!=0){//10% chance to mutate
             mutateChain(bredChain);
         }
 
@@ -521,15 +535,6 @@ public class MarkovManager : MonoBehaviour {
             }
         }
 
-        //NOTE: POSSIBLY REMOVE IN LATER VERSIONS.
-        /*
-        private void wipeChain() {
-            foreach (KeyValuePair<NoteManager.Notes, MarkovState> pair in chain){
-                pair.Value.setUpTransitions();
-            }
-            
-        }*/
-
         /// <summary>
         /// Increment the weight of the markov state at a given NoteManager enum index, to a given NoteManager enum.
         /// </summary>
@@ -613,6 +618,7 @@ public class MarkovManager : MonoBehaviour {
             }
             return noteToReturn;
         }
+
 
         /// <summary>
         /// Function used to increment the transition in the MarkovStates dictionary.
@@ -787,12 +793,31 @@ public class MarkovManager : MonoBehaviour {
         }
 
         /// <summary>
+        /// Replace the state of a chain with a new given RhythmMarkovState.
+        /// </summary>
+        /// <param name="note">The rest value representing the key of the RhythmMarkovState to replace</param>
+        /// <param name="newState">The new rhythm markov state to be inserted into the rhythmMarkovChain.</param>
+        public void replaceState(int rest, RhythmMarkovState newState)
+        {
+            chain[rest] = newState;
+        }
+
+        /// <summary>
         /// Given a specific rest value, use the RhythmMarkovState at the key of that rest value to call the getNextRest function.
         /// </summary>
         /// <param name="currentRest">The value of the rest value key wanted in the chain.</param>
         /// <returns>an integer representing the next rest value.</returns>
         public int getNextRest(int currentRest){
             return chain[currentRest].getNextRest();
+        }
+
+        /// <summary>
+        /// Given a certain rest value, return the RhythmMarkovState of that rest value.
+        /// </summary>
+        /// <param name="note">A rest value of the desired RhythmMarkovState.</param>
+        /// <returns>A RhythmMarkovState which represents the transitions from the given rest value to all other rest valuess.</returns>
+        public RhythmMarkovState getState(int rest){
+            return chain[rest];
         }
 
         /// <summary>

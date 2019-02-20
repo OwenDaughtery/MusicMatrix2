@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class TrackManager : MonoBehaviour {
     //How many seconds to wait inbetween moving the read head.
-    float waitForSeconds = 0.15f;
+    float waitForSeconds = 0.001f;
 
     //How many octaves notes should be transposed up from the bottom octave.
     int octaveOffsetMultiplier = 3;
@@ -39,7 +39,7 @@ public class TrackManager : MonoBehaviour {
     [SerializeField]
     private KeyManager keyManager;
 
-    //Key selected by user. (NOTE: This will be changed to the predicted key in future version.)
+    //Key of the system, determined by key manager during key detection phase.
     public NoteManager.Notes key;
 
     //List object to hold the scale for a given key.
@@ -99,11 +99,9 @@ public class TrackManager : MonoBehaviour {
             for (int i = 0; i < Mathf.RoundToInt(TileManager.gridHeight/7); i++) {
                 foreach (int offset in majorScale){
                     scale.Add((NoteManager.Notes)(offset + scaleOffset + (12 * (i + octaveMultiplier))));
-                    print("generate scale: " + (NoteManager.Notes)(offset + scaleOffset + (12 * (i + octaveMultiplier))));
                 }
             }
         }
-        print("generate scale: " + scale.Count);
         return scale;
     }
 
@@ -212,7 +210,7 @@ public class TrackManager : MonoBehaviour {
 
                 }else if(phase==0){
                     //Learning Phase
-                    if(bars%4==0){
+                    if(bars%1==0){
                         markovManager.populateTrack(markovChainMap, markovTileBase);
                         bars=0;
                     }
