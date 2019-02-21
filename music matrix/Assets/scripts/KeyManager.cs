@@ -50,12 +50,10 @@ public class KeyManager : MonoBehaviour {
         foreach (NoteManager.Notes uniqueNote in uniqueNotes) {
             foreach (KeyValuePair<NoteManager.Notes, List<NoteManager.Notes>> pair in circleOfFifths) {
                 if (possibleKeys.Contains(pair.Key)) {
-                    print("searching for " + uniqueNote + " in key " + pair.Key);
+                    //print("searching for " + uniqueNote + " in key " + pair.Key);
                     if (!pair.Value.Contains(uniqueNote)){
-                        print("It's not there!");
                         if (possibleKeys.Count > 1){
                             //remove the current looked at key from the possible keys.
-                            print("removing");
                             possibleKeys.Remove(pair.Key);
                         }
                         else {
@@ -67,7 +65,6 @@ public class KeyManager : MonoBehaviour {
             }
         }
 
-        print("adaptKey: " + possibleKeys.Count);
         if (possibleKeys.Count == 1){
             print("Predicted key is: " + possibleKeys[0]);
         }

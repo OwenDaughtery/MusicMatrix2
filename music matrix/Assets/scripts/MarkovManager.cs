@@ -225,7 +225,6 @@ public class MarkovManager : MonoBehaviour {
     /// <param name="tileMap">the tilemap that the method should populate</param>
     /// <param name="tileBase"></param>
     public void populateTrack(Tilemap tileMap, TileBase tileBase) {
-        print("debug id going in");
         //erase previous notes from tilemap
         tileMap.ClearAllTiles();
         List<List<NoteManager.Notes>> melody = trackManager.getMelodyFromTilemap(trackManager.getTilemap());
@@ -234,22 +233,23 @@ public class MarkovManager : MonoBehaviour {
         if (mostCommonNote == NoteManager.Notes.none) {
             mostCommonNote = NoteManager.Notes.C2;
         }
-
         //get the current markov chain from markov pair, and get the next note from the most common note.
         NoteManager.Notes nextNote = markovPair.getMarkovChain().getNextNote(mostCommonNote);
-        
         //get the rhythm markov chain from markov pair, and get the next timing for an artbritary rest value (NOTE: FUTURE VERSIONS WILL USE THE FIRST AMOUNT OF RESTS IN THE TRACKMANAGER.TILEMAP)
         int timing = markovPair.getRhythmMarkovChain().getNextRest(1); //arbritary 1, take care not to pass a number that isn't a key of the rhythm chain.
         //variable to ensure no tiles get activated over the edge of the tilemap.
         int totalSoFar =0;
-        do{
+        
+        do
+        {
             totalSoFar += timing;
             //get the height of the current note. (Note: must be reduced by 1 due to the dummy enum in NoteManager.Notes)
             int noteToHeight = ((int)nextNote) - 1;
+
             Vector3Int posToAddTo = new Vector3Int(totalSoFar, noteToHeight, 0);
             //activate tile at certain position.
             tileMap.SetTile(posToAddTo, tileBase);
-            
+
             //get next note and timing.
             nextNote = markovPair.getMarkovChain().getNextNote(nextNote);
             timing = markovPair.getRhythmMarkovChain().getNextRest(timing);
@@ -258,11 +258,10 @@ public class MarkovManager : MonoBehaviour {
         } while (totalSoFar+timing < TileManager.gridWidth-1);
         
         //after populating, save the markpov pair responsible for populating in temppair.
-        tempPair=markovPair;
+        tempPair =markovPair;
         if(phase==1){
             markovPair = getNextPair(markovPair);
         }
-        print("debug id coming out");
     }
 
     /// <summary>
@@ -448,7 +447,10 @@ public class MarkovManager : MonoBehaviour {
         /// Function that creates 12 markov states, and stores them in its dictionary under the Key of the note of that state.
         /// </summary>
         private void setUpChain() {
-            List<NoteManager.Notes> inScaleKeys = TrackManager.generateScale(key, 0);
+            List<NoteManager.Notes> inScaleKeys = new List<NoteManager.Notes>();
+            foreach (NoteManager.Notes scaleNote in TrackManager.generateScale(key, 0)) {
+                inScaleKeys.Add(MarkovManager.clampToBottomOctave(scaleNote));
+            }
             for (int i = 1; i <= 12; i++) {
                 NoteManager.Notes noteToAdd = (NoteManager.Notes)i;
                 chain.Add(noteToAdd, new MarkovState(noteToAdd, inScaleKeys));
@@ -604,10 +606,13 @@ public class MarkovManager : MonoBehaviour {
         /// <returns>A NoteManager enum representing the randomly selected note from this MarkovState</returns>
         public NoteManager.Notes getNextNote() {
             float randomValue = Random.value;
+
             float totalSoFar = 0.0f;
             NoteManager.Notes noteToReturn = NoteManager.Notes.none;
+            int debugint = 0;
 
             foreach (KeyValuePair<NoteManager.Notes, float> pair in transitions) {
+                debugint++;
                 totalSoFar += pair.Value;
                 if (randomValue <= totalSoFar)
                 {
