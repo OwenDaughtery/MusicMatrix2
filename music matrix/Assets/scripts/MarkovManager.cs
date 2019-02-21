@@ -18,7 +18,7 @@ public class MarkovManager : MonoBehaviour {
     private int numberOfPairsToStore = 4;
 
     //The current looked at markov pair.
-    public MarkovPair markovPair;
+    private MarkovPair markovPair;
 
     [SerializeField]
     public TrackManager trackManager;
@@ -61,6 +61,14 @@ public class MarkovManager : MonoBehaviour {
     /// <returns>int of what system is currently in.</returns>
     public int getPhase(){
         return phase;
+    }
+
+    /// <summary>
+    /// Getter of markov pair that contains the current markov chain and rhythm markov chain.
+    /// </summary>
+    /// <returns>MarkovPair object in the private variable markovPair.</returns>
+    public MarkovPair getMarkovPair() {
+        return markovPair;
     }
 
     /// <summary>
@@ -551,7 +559,7 @@ public class MarkovManager : MonoBehaviour {
             MarkovState state = chain[stateNote];
             float changedBy = state.incrementTransition(transitionNote, percentage);
             state.decrementAllTransitions(transitionNote, changedBy);
-            print("=========");
+            //print("=========");
             //state.asString();
             
         }
