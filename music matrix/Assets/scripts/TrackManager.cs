@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class TrackManager : MonoBehaviour {
     //How many seconds to wait inbetween moving the read head.
-    float waitForSeconds = 0.001f;
+    float waitForSeconds = 0.15f;
 
     //How many octaves notes should be transposed up from the bottom octave.
     int octaveOffsetMultiplier = 3;

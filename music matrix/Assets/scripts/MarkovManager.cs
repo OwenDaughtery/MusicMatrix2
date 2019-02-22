@@ -233,6 +233,7 @@ public class MarkovManager : MonoBehaviour {
     /// <param name="tileMap">the tilemap that the method should populate</param>
     /// <param name="tileBase"></param>
     public void populateTrack(Tilemap tileMap, TileBase tileBase) {
+        markovPair.getMarkovChain().asString();
         //erase previous notes from tilemap
         tileMap.ClearAllTiles();
         List<List<NoteManager.Notes>> melody = trackManager.getMelodyFromTilemap(trackManager.getTilemap());
@@ -582,7 +583,9 @@ public class MarkovManager : MonoBehaviour {
         private float minimumWeight;
 
         public MarkovState(NoteManager.Notes newState, List<NoteManager.Notes> newInScaleKeys) {
-            maximumWeight= 0.56f;
+            //maximumWeight= 0.56f;
+            //maximumWeight = 0.89f;
+            maximumWeight = 0.45f;
             minimumWeight =  (1f-maximumWeight)/11f;
             inScaleKeys = newInScaleKeys;
             state = newState;
@@ -736,8 +739,9 @@ public class MarkovManager : MonoBehaviour {
         public Dictionary<NoteManager.Notes, float> setUpTransitions() {
             transitions = new Dictionary<NoteManager.Notes, float>();
             //Notes which are in the scale of the key of the MarkovState are assigned a higher value.
-            float inScaleWeight = 0.125f;
-            float notInScaleWeight = (1 - (7 * 0.125f)) / 5;
+            //float inScaleWeight = 0.125f;
+            float inScaleWeight = 0.13571429f;
+            float notInScaleWeight = (1 - (7 * inScaleWeight)) / 5;
 
             for (int i = 1; i <= 12; i++) {
                 NoteManager.Notes noteToAdd = (NoteManager.Notes)i;
@@ -866,8 +870,9 @@ public class MarkovManager : MonoBehaviour {
             //lower rest values are given a higher weight to make them more probable.
             lowerRhythmWeight = (0.75f)/numberOfLowerRests;
             higherRhythmWeight = (0.25f)/numberOfHigherRests;
-                
-            maximumWeight = 0.75f;
+
+            //maximumWeight = 0.75f;
+            maximumWeight = 0.45f;
             minimumWeight = (1-maximumWeight)/maximumRest;
             state = newState;
             setUpTransitions();
