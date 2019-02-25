@@ -75,7 +75,6 @@ public class MarkovManager : MonoBehaviour {
     /// Increment phase variable.
     /// </summary>
     public void advancePhase(){
-        print("ADVANCING PHASE");
         phase+=1;
         if (phase == 0)
         {
@@ -86,7 +85,11 @@ public class MarkovManager : MonoBehaviour {
         {
             print("Advance Phase: Entering Breeding Phase");
         }
-        else if (phase == 2) {
+        else if (phase == 2)
+        {
+            print("Advance Phase: Entering Reduction Phase");
+        }
+        else if (phase == 3) {
             print("Advance Phase: Entering Lockdown Phase");
         }
     }
@@ -96,39 +99,53 @@ public class MarkovManager : MonoBehaviour {
     /// </summary>
     public void approveMarkovPair(){
         //if in learning phase:
-        if (phase == -1) {
+        if (phase == -1)
+        {
 
-        }else if(phase==0){
+        }
+        else if (phase == 0)
+        {
             //If there is a markov pair to approve.
-            if(tempPair!=null){
+            if (tempPair != null)
+            {
                 //Get id from markov chain.
                 int currentID = markovPair.getMarkovChain().getID();
                 //add markov pair to list of approved pairs.
                 approvedPairs.Add(tempPair);
                 //reset the tempPair variable to protect against user approving the same markov pair twice.
-                tempPair=null;
+                tempPair = null;
                 //create a new markov pair with a higher id than the previous one just saved.
-                markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID+1), new RhythmMarkovChain());
+                markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID + 1), new RhythmMarkovChain());
 
                 //If statement entered if enough markovPairs have been stored.
-                if(approvedPairs.Count>=numberOfPairsToStore){
+                if (approvedPairs.Count >= numberOfPairsToStore)
+                {
+                    print("advance phase being called from approveMarkovPair");
                     advancePhase();
                     //the markov pair should now be set to the first markov pair that was saved using the getNextPair method.
                     markovPair = getNextPair(null);
 
                     //create a new list of approved pairs, and populate it with breeding the pairs together.
                     List<MarkovPair> newApprovedPairs = new List<MarkovPair>();
-                    for (int i = 0; i < numberOfPairsToStore; i++){
+                    for (int i = 0; i < numberOfPairsToStore; i++)
+                    {
                         newApprovedPairs.Add(breedPairs());
                     }
                     approvedPairs = newApprovedPairs;
                 }
 
             }
-        //if in breeding phase:
-        }else if(phase==1){
+            //if in breeding phase:
+        }
+        else if (phase == 1)
+        {
             markovPair.getMarkovChain().incrementFitnessScore();
             markovPair.getRhythmMarkovChain().incrementFitnessScore();
+        }
+        else if (phase == 2) {
+            markovPair.getMarkovChain().incrementFitnessScore();
+            markovPair.getRhythmMarkovChain().incrementFitnessScore();
+            markovPair = getNextPair(markovPair);
         }
         
         print("number of approved markov chains: " + approvedPairs.Count);
@@ -138,19 +155,39 @@ public class MarkovManager : MonoBehaviour {
     /// Method used to disapprove of a markov pair. Simply creates a brand new markov chain and trashes the current one.
     /// </summary>
     public void disapproveMarkovPair(){
-        if (phase == -1){
+        if (phase == -1)
+        {
 
-        }else if (phase == 0){
+        }
+        else if (phase == 0)
+        {
             if (tempPair != null)
             {
                 int currentID = markovPair.getMarkovChain().getID();
                 tempPair = null;
                 markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID + 1), new RhythmMarkovChain());
             }
-        }else if (phase == 1) {
+        }
+        else if (phase == 1)
+        {
             markovPair.getMarkovChain().decrementFitnessScore();
             markovPair.getRhythmMarkovChain().decrementFitnessScore();
         }
+        else if (phase == 2) {
+            if (approvedPairs.Count >= 2) {
+                MarkovPair tempPair = markovPair;
+                markovPair = getNextPair(markovPair);
+                approvedPairs.Remove(tempPair);
+                if (approvedPairs.Count == 1)
+                {
+                    print("Advance phase being called from dissapprove markov pair");
+                    advancePhase();
+                }
+            }
+
+        }
+
+        print("number of approved markov chains: " + approvedPairs.Count);
     }
 
     /// <summary>
@@ -159,12 +196,19 @@ public class MarkovManager : MonoBehaviour {
     /// <param name="currentPair">The currently used markovpair, if null is passed then the method will return the first markov pair in the list.</param>
     /// <returns></returns>
     private MarkovPair getNextPair(MarkovPair currentPair){
+        print("get next pair has been called");
         int currentIndex;
         if(currentPair == null){
             currentIndex = 0;
         }else{
             currentIndex = approvedPairs.IndexOf(currentPair);
             currentIndex = (currentIndex+1) % approvedPairs.Count;
+            if (currentIndex == approvedPairs.Count-1 && phase==1) {
+                //50% chance to enter next phase. .Range is NOT maximally inclusive
+                if (Random.Range(0, 2) == 0) {
+                    advancePhase();
+                }
+            }
         }
         print("getting markov chain at index " + currentIndex + " which has ID of " + approvedPairs[currentIndex].getMarkovChain().getID());
         return approvedPairs[currentIndex];
@@ -241,7 +285,7 @@ public class MarkovManager : MonoBehaviour {
     /// <param name="tileMap">the tilemap that the method should populate</param>
     /// <param name="tileBase"></param>
     public void populateTrack(Tilemap tileMap, TileBase tileBase) {
-        markovPair.getMarkovChain().asString();
+        //markovPair.getMarkovChain().asString();
         //erase previous notes from tilemap
         tileMap.ClearAllTiles();
         List<List<NoteManager.Notes>> melody = trackManager.getMelodyFromTilemap(trackManager.getTilemap());

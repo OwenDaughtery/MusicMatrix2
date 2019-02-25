@@ -202,23 +202,36 @@ public class TrackManager : MonoBehaviour {
                     markovManager.influenceChain(tileMap);
                     markovManager.influenceRhythmChain(tileMap);
                 }
-                
+
 
                 //Check which phase system is in to do correct action.
-                if (phase == -1) {
+                if (phase == -1)
+                {
                     //Key detection Phase
 
-                }else if(phase==0){
+                }
+                else if (phase == 0)
+                {
                     //Learning Phase
-                    if(bars%1==0){
+                    if (bars % 1 == 0)
+                    {
                         markovManager.populateTrack(markovChainMap, markovTileBase);
-                        bars=0;
+                        bars = 0;
                     }
-                }else if(phase==1){
+                }
+                else if (phase == 1)
+                {
                     //Breeding Phase
-                    if(bars%1==0){
+                    if (bars % 1 == 0)
+                    {
                         markovManager.populateTrack(markovChainMap, markovTileBase);
-                        bars=0;
+                        bars = 0;
+                    }
+                }
+                else if (phase == 2) {
+                    if (bars % 1 == 0) {
+                        markovManager.populateTrack(markovChainMap, markovTileBase);
+                        bars = 0;
                     }
                 }
 
