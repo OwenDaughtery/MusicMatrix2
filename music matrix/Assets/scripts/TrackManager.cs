@@ -224,11 +224,15 @@ public class TrackManager : MonoBehaviour {
 
                 if (key == NoteManager.Notes.none) {
                     //update KeyManager with user inputted notes from bar just played.
-                    List<NoteManager.Notes> predictedKeys = keyManager.adaptkey(getMelodyFromTilemap(tileMap));
-                    if (predictedKeys.Count == 1){
-                        print("Loop: successfully narrowed key down to 1. Setting key.");
-                        key = predictedKeys[0];
+                    NoteManager.Notes predictedKey = keyManager.adaptkey(getMelodyFromTilemap(tileMap));
+                    if (predictedKey != NoteManager.Notes.none)
+                    {
+                        print("Loop: successfully narrowed key down. Setting key.");
+                        key = predictedKey;
                         markovManager.advancePhase();
+                    }
+                    else {
+                        print("still not certain on key yet");
                     }
                     //markovManager.weightInKeyNotes(predictedKeys);
                 }

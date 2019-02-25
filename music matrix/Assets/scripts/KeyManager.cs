@@ -33,9 +33,14 @@ public class KeyManager : MonoBehaviour {
     /// </summary>
     /// <param name="melody">A list of list of NoteManager enums representing all of the notes in a tilemap</param>
     /// <returns>A list of possible keys the user could be playing in.</returns>
-    public List<NoteManager.Notes> adaptkey(List<List<NoteManager.Notes>> melody) {
+    public NoteManager.Notes adaptkey(List<List<NoteManager.Notes>> melody) {
         List<NoteManager.Notes> uniqueNotes = new List<NoteManager.Notes>();
-        List<NoteManager.Notes> selectionOfKeys = new List<NoteManager.Notes>(possibleKeys);
+        Dictionary<NoteManager.Notes, int> keyDistances = new Dictionary<NoteManager.Notes, int>();
+        foreach (KeyValuePair<NoteManager.Notes, List<NoteManager.Notes>> pair in circleOfFifths) {
+            keyDistances.Add(pair.Key, 0);
+        }
+        keyDistances.Add(NoteManager.Notes.none, 4);//Adding none with an int of X means that keys must have a distance of X or more to be considered "the key"
+        //List<NoteManager.Notes> selectionOfKeys = new List<NoteManager.Notes>(possibleKeys);
         //getting every unique note from the melody given by the user.
         foreach (List<NoteManager.Notes> column in melody) {
             foreach (NoteManager.Notes note in column){
@@ -49,7 +54,11 @@ public class KeyManager : MonoBehaviour {
         //for each unique note, check if it is in a scale from the possible keys.
         foreach (NoteManager.Notes uniqueNote in uniqueNotes) {
             foreach (KeyValuePair<NoteManager.Notes, List<NoteManager.Notes>> pair in circleOfFifths) {
-                if (possibleKeys.Contains(pair.Key)) {
+                if (pair.Value.Contains(uniqueNote)) {
+                    keyDistances[pair.Key] += 1;
+                }
+                
+                /*if (possibleKeys.Contains(pair.Key)) {
                     //print("searching for " + uniqueNote + " in key " + pair.Key);
                     if (!pair.Value.Contains(uniqueNote)){
                         if (possibleKeys.Count > 1){
@@ -62,13 +71,21 @@ public class KeyManager : MonoBehaviour {
                         } 
                     }  
                 }  
+                */
             }
         }
 
-        if (possibleKeys.Count == 1){
-            print("Predicted key is: " + possibleKeys[0]);
+        NoteManager.Notes chosenKey = NoteManager.Notes.none;
+        foreach (KeyValuePair<NoteManager.Notes, int> pair in keyDistances) {
+            if (pair.Value >= keyDistances[chosenKey]) {
+                chosenKey = pair.Key;
+            }
         }
 
-        return possibleKeys;
+        //if (possibleKeys.Count == 1){
+        //    print("Predicted key is: " + possibleKeys[0]);
+        //}
+        print("predicted key is: " + chosenKey);
+        return chosenKey;
     }
 }
