@@ -77,11 +77,17 @@ public class MarkovManager : MonoBehaviour {
     public void advancePhase(){
         print("ADVANCING PHASE");
         phase+=1;
-        if (phase == 0) {
+        if (phase == 0)
+        {
             print("Advance Phase: Entering Learning Phase.");
             startMarkovManaging();
-        } else if (phase == 1) {
+        }
+        else if (phase == 1)
+        {
             print("Advance Phase: Entering Breeding Phase");
+        }
+        else if (phase == 2) {
+            print("Advance Phase: Entering Lockdown Phase");
         }
     }
 
@@ -121,7 +127,8 @@ public class MarkovManager : MonoBehaviour {
             }
         //if in breeding phase:
         }else if(phase==1){
-            
+            markovPair.getMarkovChain().incrementFitnessScore();
+            markovPair.getRhythmMarkovChain().incrementFitnessScore();
         }
         
         print("number of approved markov chains: " + approvedPairs.Count);
@@ -141,7 +148,8 @@ public class MarkovManager : MonoBehaviour {
                 markovPair = new MarkovPair(new MarkovChain(trackManager.getKey(), currentID + 1), new RhythmMarkovChain());
             }
         }else if (phase == 1) {
-
+            markovPair.getMarkovChain().decrementFitnessScore();
+            markovPair.getRhythmMarkovChain().decrementFitnessScore();
         }
     }
 
@@ -513,8 +521,12 @@ public class MarkovManager : MonoBehaviour {
         /// Function to increment the fitness of the current markov chain, up to but not past 10.
         /// </summary>
         public void incrementFitnessScore(){
-            if(fitnessScore<10){
+            if (fitnessScore < 10)
+            {
                 fitnessScore++;
+            }
+            else {
+                print("MarkovChain - IncrementFitnessScore: Fitness score is maxed out");
             }
         }
 
@@ -522,8 +534,12 @@ public class MarkovManager : MonoBehaviour {
         /// Function to decrement the fitness of the current markov chain,  down to but not past 0.
         /// </summary>
         public void decrementFitnessScore(){
-            if(fitnessScore>0){
+            if (fitnessScore > 0)
+            {
                 fitnessScore--;
+            }
+            else {
+                print("MarkovChain - DecrementFitnessScore: Fitness score is bottomed out");
             }
         }
 
@@ -782,6 +798,8 @@ public class MarkovManager : MonoBehaviour {
     /// </summary>
     public class RhythmMarkovChain{
         Dictionary<int, RhythmMarkovState> chain = new Dictionary<int, RhythmMarkovState>();
+        int fitnessScore = 5;
+
 
         public RhythmMarkovChain(){
             setUpChain();
@@ -843,6 +861,36 @@ public class MarkovManager : MonoBehaviour {
         public void asString(){
             foreach (KeyValuePair<int, RhythmMarkovState> pair in chain){
                 pair.Value.sumProbs();
+            }
+        }
+
+        /// <summary>
+        /// Function to increment the fitness of the current markov chain, up to but not past 10.
+        /// </summary>
+        public void incrementFitnessScore()
+        {
+            if (fitnessScore < 10)
+            {
+                fitnessScore++;
+            }
+            else
+            {
+                print("RhythmMarkovChain - IncrementFitnessScore: Fitness score is maxed out");
+            }
+        }
+
+        /// <summary>
+        /// Function to decrement the fitness of the current markov chain,  down to but not past 0.
+        /// </summary>
+        public void decrementFitnessScore()
+        {
+            if (fitnessScore > 0)
+            {
+                fitnessScore--;
+            }
+            else
+            {
+                print("RhythmMarkovChain - DecrementFitnessScore: Fitness score is bottomed out");
             }
         }
 
