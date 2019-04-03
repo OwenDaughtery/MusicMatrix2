@@ -213,7 +213,7 @@ public class TrackManager : MonoBehaviour {
                 else if (phase == 0)
                 {
                     //Learning Phase
-                    if (bars % 1 == 0)
+                    if (bars % 4 == 0)
                     {
                         markovManager.populateTrack(markovChainMap, markovTileBase);
                         bars = 0;

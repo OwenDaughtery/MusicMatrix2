@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 
-public class KeyManager : MonoBehaviour { 
+public class KeyManager : MonoBehaviour {
+    public NoteManager.Notes overrideKey = NoteManager.Notes.none;
     //The range of possible keys that the system could be in
     private List<NoteManager.Notes> possibleKeys = new List<NoteManager.Notes>();
     //the circle of fifths that shows the notes in a scale for every key.
@@ -39,7 +40,7 @@ public class KeyManager : MonoBehaviour {
         foreach (KeyValuePair<NoteManager.Notes, List<NoteManager.Notes>> pair in circleOfFifths) {
             keyDistances.Add(pair.Key, 0);
         }
-        keyDistances.Add(NoteManager.Notes.none, 5);//Adding none with an int of X means that keys must have a distance of X or more to be considered "the key"
+        keyDistances.Add(NoteManager.Notes.none, 7);//Adding none with an int of X means that keys must have a distance of X or more to be considered "the key"
         //List<NoteManager.Notes> selectionOfKeys = new List<NoteManager.Notes>(possibleKeys);
         //getting every unique note from the melody given by the user.
         foreach (List<NoteManager.Notes> column in melody) {
@@ -86,6 +87,13 @@ public class KeyManager : MonoBehaviour {
         //    print("Predicted key is: " + possibleKeys[0]);
         //}
         print("predicted key is: " + chosenKey);
-        return chosenKey;
+        if (overrideKey == NoteManager.Notes.none)
+        {
+            return chosenKey;
+        }
+        else {
+            return overrideKey;
+        }
+
     }
 }
