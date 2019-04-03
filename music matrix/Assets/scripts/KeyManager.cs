@@ -39,7 +39,7 @@ public class KeyManager : MonoBehaviour {
         foreach (KeyValuePair<NoteManager.Notes, List<NoteManager.Notes>> pair in circleOfFifths) {
             keyDistances.Add(pair.Key, 0);
         }
-        keyDistances.Add(NoteManager.Notes.none, 4);//Adding none with an int of X means that keys must have a distance of X or more to be considered "the key"
+        keyDistances.Add(NoteManager.Notes.none, 5);//Adding none with an int of X means that keys must have a distance of X or more to be considered "the key"
         //List<NoteManager.Notes> selectionOfKeys = new List<NoteManager.Notes>(possibleKeys);
         //getting every unique note from the melody given by the user.
         foreach (List<NoteManager.Notes> column in melody) {

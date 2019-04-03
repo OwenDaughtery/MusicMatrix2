@@ -214,15 +214,6 @@ public class MarkovManager : MonoBehaviour {
         return approvedPairs[currentIndex];
     }
 
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="predictedKeys"></param>
-    public void weightInKeyNotes(List<NoteManager.Notes> predictedKeys) {
-
-    }
-
     /// <summary>
     /// Change the weights of the transitions for the current rhythm markov chain.
     /// </summary>
